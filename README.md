@@ -5,7 +5,7 @@ This project seeks to
 ## Team members
 
 - Authors: Phu Lam / Kent Tran / Aaron
-- Emails:  ... / lamphu75@csu.fullerton.edu / ...
+- Emails:  kentvtran@csu.fullerton.edu / lamphu75@csu.fullerton.edu / ...
 
 ## Setup and Running
 
