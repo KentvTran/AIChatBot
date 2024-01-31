@@ -1,4 +1,4 @@
-# AIChatBot
+# CPSC 362 - AIChatBot
 
 This project seeks to
 
