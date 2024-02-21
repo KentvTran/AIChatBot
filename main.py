@@ -1,3 +1,4 @@
+import random
 import discord
 import os
 from discord.ext import commands
@@ -33,14 +34,26 @@ async def on_message(message):
 
     # Respond to a specific command
     if message.content.lower().startswith('!hello'):
-        await message.channel.send('wassup my g!')
+        # List of possible responses
+        responses = ['Wassup my g!', 'Hello there!', 'Howdy!', 'Hey!']
 
-    # Add more responses or commands as needed
-    
+        # Select a random response from the list
+        response = random.choice(responses)
 
+        # Send the random response
+        await message.channel.send(response)
 
-    # Let the bot process other events and commands
-    await client.process_commands(message)
+# help command
+@client.command(name='help')
+async def help_command(ctx):
+    # Customize the help message as needed
+    help_message = "Hi! This is EddyBot. Here are the available commands:\n" \
+                   "!hello - Greet the bot\n" \
+                   "!help - Display this help message"
+
+    # Send help message to channel where command was invoked
+    await ctx.send(help_message)
+
 
 # Start the bot
 client.run(TOKEN)
