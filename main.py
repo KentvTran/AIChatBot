@@ -1,5 +1,6 @@
 import random
 import discord
+import youtube_dl
 import requests
 import json
 import os
@@ -11,9 +12,10 @@ load_dotenv()
 TOKEN = os.environ.get("DISCORD_TOKEN")
 JOKEAPI = os.environ.get("JOKEAPI")
 
-# This enables features for bot, rn message
+# This enables features for bot, rn message and member-related events
 intents = discord.Intents.default()
 intents.message_content = True
+intents.members = True
 
 # Create an instance of the bot with intents
 # Prefix calls bot like {!help}
@@ -100,6 +102,56 @@ async def on_message(message):
 
     # Process commands
     await client.process_commands(message)
+
+# plays music from youtube link
+@client.command(name='music')
+async def music(ctx, url):
+    if ctx.author.voice:
+        channel = ctx.author.voice.channel
+        voice = await channel.connect()
+
+        ydl_opts = {
+            'format': 'bestaudio/best',
+            'postprocessors': [{
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'mp3',
+                'preferredquality': '192',
+            }],
+        }
+
+        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+            url2 = info['formats'][0]['url']
+            voice.play(discord.FFmpegPCMAudio(url2))
+
+    else:
+        await ctx.send("You must be in the voice channel to run this command!")
+
+
+@client.command(name='leave')
+async def leave(ctx):
+    if (ctx.voice_client):
+        await ctx.guild.voice_client.disconnect()
+        await ctx.send("No more music D:")
+    else:
+        await ctx.send("I am not in a voice channel")
+
+@client.command(name='pause')
+async def pause(ctx):
+    voice = discord.utils.get(client.voice_clients,guild=ctx.guild)
+    if voice.is_playing():
+        voice.pause()
+    else:
+        await ctx.send("No audio playing right now..")
+
+
+@client.command(name='resume')
+async def resume(ctx):
+    voice = discord.utils.get(client.voice_clients, guild=ctx.guild)
+    if voice.is_paused():
+        voice.resume()
+    else:
+        await ctx.send("No song paused right now..")
 
 # Start the bot
 client.run(TOKEN)
