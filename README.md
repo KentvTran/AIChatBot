@@ -8,7 +8,7 @@ Thus, makes it a convenience for students with busy schedules being a command pr
 ## Team members
 
 - Authors: Phu Lam / Kent Tran / Aaron
-- Emails:  kentvtran@csu.fullerton.edu / lamphu75@csu.fullerton.edu / ...
+- Emails:  kentvtran@csu.fullerton.edu / lamphu75@csu.fullerton.edu / alee190@csu.fullerton.edu
 
 ## Setup and Running (Not running 24/7)
 
