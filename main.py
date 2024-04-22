@@ -1,5 +1,6 @@
 import random
 import discord
+import openai
 import json
 import requests
 import asyncio
@@ -16,6 +17,8 @@ JOKEAPI = os.environ.get("JOKEAPI")
 API_URL = 'https://canvas.instructure.com'
 canvas_base_url = 'https://csufullerton.instructure.com'
 CANVAS = os.environ.get("CANVAS_TOKEN")
+CHAT = os.environ.get("CHATGPT_TOKEN")
+openai.api_key = CHAT
 # This enables features for bot, rn message and member-related events
 intents = discord.Intents.default()
 intents.message_content = True
@@ -108,6 +111,17 @@ async def on_message(message):
 
     # Process commands
     await client.process_commands(message)
+
+@client.command(name='Eddy')
+async def ask_gpt(ctx, *, question):
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "user", "content": question}
+        ]
+    )
+    answer = response['choices'][0]['message']['content']
+    await ctx.send(answer)
 
 @client.command(name='music')
 async def music(ctx):
