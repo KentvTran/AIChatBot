@@ -29,6 +29,8 @@ intents.members = True
 client = commands.Bot(command_prefix='!', intents=intents)
 
 reminders = {}
+current_playlist = []  # List to store the shuffled playlist
+
 
 # client.event are for bot features
 # Event handler for when the bot is ready
@@ -41,13 +43,13 @@ async def on_ready():
 # event when members join
 @client.event
 async def on_member_join(member):
-    channel = client.get_channel(1206700172520853528)
+    channel = client.get_channel(1237645037995561011)
     await channel.send(f"Greetings {member.mention}! Welcome to the server.")
 
 # event when members leave
 @client.event
 async def on_member_remove(member):
-    channel = client.get_channel(1206700172520853528)
+    channel = client.get_channel(1237645037995561011)
     await channel.send(f"Have a good day {member.mention}!")
 
 # Joke command
@@ -125,16 +127,30 @@ async def ask_gpt(ctx, *, question):
 
 @client.command(name='music')
 async def music(ctx):
-    await ctx.invoke(client.get_command('pause'))
-    await ctx.invoke(client.get_command('shuffle'))
+    if not ctx.author.voice:
+        await ctx.send("Please join a voice channel to use this command.")
+        return
 
-    await ctx.send("Now playing shuffled music.")
+    voice_channel = ctx.author.voice.channel
+    voice_client = ctx.voice_client
 
-current_playlist = []  # List to store the shuffled playlist
+    if voice_client and voice_client.is_paused():
+        voice_client.resume()
+        await ctx.send("Resuming music.")
+    elif voice_client and voice_client.is_playing():
+        await ctx.send("Music is already playing.")
+    else:
+        await ctx.invoke(client.get_command('shuffle'))
+        await ctx.send("Now playing shuffled music.")
+
 
 @client.command(name='shuffle')
 async def shuffle(ctx):
     global current_playlist
+
+    if ctx.voice_client:
+        if ctx.voice_client.is_playing() or ctx.voice_client.is_paused():
+            ctx.voice_client.stop()  # Stop the current playback
 
     # Get all MP3 files in the project folder
     mp3_files = [filename for filename in os.listdir() if filename.endswith('.mp3')]
@@ -157,6 +173,7 @@ async def shuffle(ctx):
 
     else:
         await ctx.send("Please be in a voice channel to use this command!")
+
 
 
 @client.command(name='skip')
