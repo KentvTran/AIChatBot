@@ -175,15 +175,14 @@ async def now_playing(ctx):
         await ctx.send("No audio is currently playing.")
 
 
-#canvas announcement function
-# Command to list courses
-@client.command(name='list_course_ids')
-async def list_course_ids(ctx):
+@client.command(name='list_courses')
+async def list_courses(ctx):
     global CANVAS, canvas_base_url
     if not CANVAS:
         await ctx.send("Canvas access token is missing.")
         return
 
+    # Construct the Canvas API URL to fetch all courses
     canvas_api_url = f"{canvas_base_url}/api/v1/courses"
 
     headers = {
@@ -193,21 +192,40 @@ async def list_course_ids(ctx):
     try:
         # Make a request to fetch all courses
         response = requests.get(canvas_api_url, headers=headers)
-        response.raise_for_status()
+        response.raise_for_status()  # Raise an error for non-2xx status codes
 
         courses_data = response.json()
 
+        # Check if the response contains an array of course objects
         if isinstance(courses_data, list) and len(courses_data) > 0:
-            # Prepare a formatted list of course names and IDs
-            courses_list = []
+            courses_info = []
+
+            # Iterate over each course to retrieve additional details
             for course in courses_data:
                 course_name = course.get('name', 'Unnamed Course')
                 course_id = course.get('id', 'N/A')
-                courses_list.append(f"{course_name} (ID: {course_id})")
 
-            # Join the course names and IDs into a single string
-            courses_list_str = "\n".join(courses_list)
-            await ctx.send(f"List of Canvas Courses:\n{courses_list_str}")
+                # Fetch grades for the current course
+                grades_api_url = f"{canvas_base_url}/api/v1/courses/{course_id}/enrollments"
+                grades_response = requests.get(grades_api_url, headers=headers)
+                grades_data = grades_response.json()
+
+                if isinstance(grades_data, list) and len(grades_data) > 0:
+                    # Extract the grades for the first enrollment (assuming one user per enrollment)
+                    first_enrollment = grades_data[0]
+                    current_grade = first_enrollment.get('grades', {}).get('current_score', 'N/A')
+
+                    # Format course info including name, ID, and grade
+                    course_info = f"{course_name} (ID: {course_id}) - Grade: {current_grade}"
+                else:
+                    # Format course info without grade if no grades are available
+                    course_info = f"{course_name} (ID: {course_id}) - Grade: N/A"
+
+                courses_info.append(course_info)
+
+            # Join all course info strings into a single message
+            courses_list_str = "\n".join(courses_info)
+            await ctx.send(f"List of Canvas Courses and Grades:\n{courses_list_str}")
         else:
             await ctx.send("No courses found.")
 
@@ -215,6 +233,7 @@ async def list_course_ids(ctx):
         await ctx.send(f"HTTP error occurred: {e.response.status_code} - {e.response.reason}")
     except Exception as e:
         await ctx.send(f"Error fetching course data: {e}")
+
 
 
 
